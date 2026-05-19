@@ -1,0 +1,32 @@
+# API Keys and Secrets
+.env
+
+# Virtual Environment
+venv/
+ENV/
+
+# Python Cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Temporary & Cached Media Folders
+downloads/
+clips/
+final_videolar/
+captions/
+thumbnails/
+temp/
+output/
+klipler/
+test_sandbox/
+data/
+
+# Large files
+*.mp3
+*.mp4
+*.zip
+*.rar
+*.log
+test_output.log

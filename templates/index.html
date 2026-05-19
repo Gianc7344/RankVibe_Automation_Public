@@ -1,0 +1,1809 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RankVibe Automation</title>
+    <!-- GÖREV ÇUBUĞU İKONU -->
+    <link rel="icon" href="/favicon.ico?v=2" type="image/x-icon">
+    <link rel="shortcut icon" href="/favicon.ico?v=2" type="image/x-icon">
+    <meta name="description" content="RankVibe YouTube Shorts ranking video automation tool">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        /* ═══════════════════════════════════════════
+           DESIGN SYSTEM
+           ═══════════════════════════════════════════ */
+        :root {
+            --bg-deep:    #050a1a;
+            --bg-base:    #0a1128;
+            --bg-card:    #0f1a3a;
+            --bg-card-hover: #142042;
+            --bg-glass:   rgba(15, 26, 58, 0.65);
+            --border:     rgba(59, 130, 246, 0.15);
+            --border-glow:rgba(59, 130, 246, 0.4);
+            --accent:     #2563eb;
+            --accent-light:#60a5fa;
+            --accent-soft: #3b82f6;
+            --green:      #22c55e;
+            --red:        #ef4444;
+            --orange:     #f59e0b;
+            --text:       #f1f5f9;
+            --text-dim:   #94a3b8;
+            --text-muted: #64748b;
+            --radius:     16px;
+            --radius-sm:  10px;
+            --radius-xs:  6px;
+            --shadow:     0 8px 32px rgba(0,0,0,0.4);
+            --shadow-glow:0 0 30px rgba(37,99,235,0.15);
+        }
+
+        * { margin:0; padding:0; box-sizing:border-box; }
+
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background: var(--bg-deep);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* animated background */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background:
+                radial-gradient(ellipse 80% 60% at 20% 10%, rgba(37,99,235,0.08) 0%, transparent 60%),
+                radial-gradient(ellipse 60% 50% at 80% 90%, rgba(96,165,250,0.06) 0%, transparent 60%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* ── HEADER ─────────────────────────────── */
+        .header {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            background: rgba(10, 17, 40, 0.8);
+            border-bottom: 1px solid var(--border);
+            padding: 16px 0;
+        }
+        .header-inner {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 32px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 800;
+            font-size: 1.4rem;
+            letter-spacing: -0.5px;
+        }
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, var(--accent), var(--accent-light));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            box-shadow: 0 0 20px rgba(37,99,235,0.3);
+        }
+        .logo span { color: var(--accent-light); }
+        .status-badge {
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+        .status-idle {
+            background: rgba(34,197,94,0.1);
+            color: var(--green);
+            border: 1px solid rgba(34,197,94,0.2);
+        }
+        .status-busy {
+            background: rgba(245,158,11,0.1);
+            color: var(--orange);
+            border: 1px solid rgba(245,158,11,0.2);
+            animation: pulse-badge 2s ease-in-out infinite;
+        }
+        @keyframes pulse-badge {
+            0%,100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+
+        /* ── LAYOUT ─────────────────────────────── */
+        .container {
+            position: relative;
+            z-index: 1;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 32px;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+
+        .full-width { grid-column: 1 / -1; }
+
+        /* ── CARD ────────────────────────────────── */
+        .card {
+            background: var(--bg-glass);
+            backdrop-filter: blur(16px) saturate(150%);
+            -webkit-backdrop-filter: blur(16px) saturate(150%);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 28px;
+            box-shadow: var(--shadow);
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+        .card:hover {
+            border-color: var(--border-glow);
+            box-shadow: var(--shadow), var(--shadow-glow);
+        }
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .card-title .icon {
+            font-size: 1.3rem;
+        }
+        .card-subtitle {
+            font-size: 0.8rem;
+            color: var(--text-dim);
+            margin-top: 4px;
+        }
+
+        /* ── INPUTS ──────────────────────────────── */
+        .input-group {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        input[type="text"] {
+            flex: 1;
+            padding: 14px 18px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border);
+            background: rgba(5, 10, 26, 0.6);
+            color: var(--text);
+            font-family: inherit;
+            font-size: 0.95rem;
+            outline: none;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+        input[type="text"]:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(37,99,235,0.15);
+        }
+        input[type="text"]::placeholder {
+            color: var(--text-muted);
+        }
+
+        /* ── BUTTONS ─────────────────────────────── */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 14px 24px;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-family: inherit;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            white-space: nowrap;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent), #4f8afa);
+            color: white;
+            box-shadow: 0 4px 15px rgba(37,99,235,0.3);
+        }
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 25px rgba(37,99,235,0.45);
+        }
+        .btn-green {
+            background: linear-gradient(135deg, #16a34a, #22c55e);
+            color: white;
+            box-shadow: 0 4px 15px rgba(34,197,94,0.3);
+        }
+        .btn-green:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 25px rgba(34,197,94,0.45);
+        }
+        .btn:disabled {
+            opacity: 0.45;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+        .btn .spinner {
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            display: none;
+        }
+        .btn.loading .spinner { display: block; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ── LOG TERMINAL ────────────────────────── */
+        .log-box {
+            background: rgba(2, 6, 18, 0.7);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 16px;
+            font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+            font-size: 0.78rem;
+            line-height: 1.7;
+            color: var(--text-dim);
+            max-height: 280px;
+            overflow-y: auto;
+            scroll-behavior: smooth;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+        .log-box:empty::before {
+            content: 'Terminal çıktısı burada görünecek...';
+            color: var(--text-muted);
+            font-style: italic;
+        }
+        .log-box .log-success { color: var(--green); }
+        .log-box .log-error   { color: var(--red); }
+        .log-box .log-warn    { color: var(--orange); }
+
+        /* ── CLIP GALLERY ────────────────────────── */
+        .gallery-controls {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .selection-count {
+            font-size: 0.85rem;
+            color: var(--text-dim);
+        }
+        .selection-count strong {
+            color: var(--accent-light);
+            font-weight: 700;
+        }
+        .clip-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 16px;
+            max-height: 620px;
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+        .clip-grid::-webkit-scrollbar { width: 6px; }
+        .clip-grid::-webkit-scrollbar-track { background: transparent; }
+        .clip-grid::-webkit-scrollbar-thumb { background: var(--border-glow); border-radius: 3px; }
+
+        .clip-card {
+            position: relative;
+            border-radius: var(--radius-sm);
+            border: 2px solid transparent;
+            background: var(--bg-card);
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+        .clip-card:hover {
+            border-color: var(--border-glow);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+        }
+        .clip-card.selected {
+            border-color: var(--accent-light);
+            box-shadow: 0 0 20px rgba(37,99,235,0.25);
+        }
+        .clip-card.selected::after {
+            content: attr(data-order);
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: var(--accent);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: 800;
+            z-index: 5;
+        }
+        .clip-thumb {
+            width: 100%;
+            aspect-ratio: 16/9;
+            object-fit: cover;
+            display: block;
+            background: var(--bg-deep);
+        }
+        .clip-thumb-placeholder {
+            width: 100%;
+            aspect-ratio: 16/9;
+            background: linear-gradient(135deg, var(--bg-deep), var(--bg-card));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            color: var(--text-muted);
+        }
+        .clip-info {
+            padding: 10px 12px;
+        }
+        .clip-name {
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: var(--text);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .clip-size {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            margin-top: 3px;
+        }
+
+        /* ── OUTPUT SECTION ──────────────────────── */
+        .output-section {
+            margin-top: 20px;
+        }
+        .download-card {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 20px;
+            border-radius: var(--radius-sm);
+            background: rgba(34,197,94,0.08);
+            border: 1px solid rgba(34,197,94,0.2);
+            margin-top: 12px;
+        }
+        .download-card a {
+            color: var(--green);
+            font-weight: 600;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+        .download-card a:hover { color: #4ade80; }
+
+        /* ── STEP INDICATOR ──────────────────────── */
+        .steps {
+            display: flex;
+            gap: 0;
+            margin-bottom: 32px;
+        }
+        .step {
+            flex: 1;
+            padding: 18px 20px;
+            text-align: center;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            position: relative;
+            transition: all 0.3s;
+        }
+        .step:first-child { border-radius: var(--radius-sm) 0 0 var(--radius-sm); }
+        .step:last-child  { border-radius: 0 var(--radius-sm) var(--radius-sm) 0; }
+        .step.active {
+            color: var(--text);
+            background: rgba(37,99,235,0.1);
+            border-color: var(--accent);
+        }
+        .step.completed {
+            color: var(--green);
+            background: rgba(34,197,94,0.05);
+            border-color: rgba(34,197,94,0.3);
+        }
+        .step-num {
+            display: inline-flex;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: 800;
+            margin-right: 8px;
+            background: var(--bg-deep);
+            border: 1px solid var(--border);
+            vertical-align: middle;
+        }
+        .step.active .step-num {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: white;
+        }
+        .step.completed .step-num {
+            background: var(--green);
+            border-color: var(--green);
+            color: white;
+        }
+
+        /* ── SECTION PANELS ──────────────────────── */
+        .panel { display: none; }
+        .panel.visible { display: block; }
+
+        /* ── EMPTY STATE ─────────────────────────── */
+        .empty-state {
+            text-align: center;
+            padding: 48px 24px;
+            color: var(--text-muted);
+        }
+        .empty-state .icon { font-size: 3rem; margin-bottom: 12px; }
+        .empty-state p { font-size: 0.9rem; line-height: 1.6; }
+
+        /* ── CLIP NAV ARROWS ─────────────────────────────────── */
+        .nav-arrow {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: rgba(15, 26, 58, 0.92);
+            border: 1px solid var(--border-glow);
+            color: var(--text);
+            font-size: 1.2rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 20;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+            user-select: none;
+        }
+        .nav-arrow:hover:not(:disabled) {
+            background: var(--accent);
+            border-color: var(--accent-light);
+            transform: translateY(-50%) scale(1.08);
+            box-shadow: 0 6px 24px rgba(37,99,235,0.4);
+        }
+        .nav-arrow:disabled {
+            opacity: 0.25;
+            cursor: not-allowed;
+            transform: translateY(-50%);
+        }
+        .nav-arrow-left  { left: -22px; }
+        .nav-arrow-right { right: -22px; }
+
+        /* ── RESPONSIVE ──────────────────────────── */
+        @media (max-width: 900px) {
+            .grid-2 { grid-template-columns: 1fr; }
+            .container { padding: 16px; }
+            .steps { flex-direction: column; }
+            .step:first-child { border-radius: var(--radius-sm) var(--radius-sm) 0 0; }
+            .step:last-child  { border-radius: 0 0 var(--radius-sm) var(--radius-sm); }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ═══ HEADER ═══ -->
+<header class="header">
+    <div class="header-inner">
+        <div class="logo">
+            <div class="logo-icon">🎬</div>
+            Rank<span>Vibe</span>
+        </div>
+        <div id="globalStatus" class="status-badge status-idle">● Hazır</div>
+    </div>
+</header>
+
+<!-- ═══ MAIN CONTENT ═══ -->
+<main class="container">
+
+    <!-- STEP INDICATOR -->
+    <div class="steps">
+        <div class="step active" id="step1" onclick="goToStep(1)" style="cursor:pointer">
+            <span class="step-num">1</span>
+            Fikir & Arama
+        </div>
+        <div class="step" id="step2" onclick="goToStep(2)" style="cursor:pointer">
+            <span class="step-num">2</span>
+            Sahne Kesim
+        </div>
+        <div class="step" id="step3" onclick="goToStep(3)" style="cursor:pointer">
+            <span class="step-num">3</span>
+            Klip Seçimi
+        </div>
+        <div class="step" id="step4" onclick="goToStep(4)" style="cursor:pointer">
+            <span class="step-num">4</span>
+            Video Oluştur
+        </div>
+    </div>
+
+    <!-- ═══ PANEL 1: FİKİR VE ARAMA ═══ -->
+    <section class="panel visible" id="panel1">
+        <div class="card">
+            <div class="card-title">
+                <span class="icon">💡</span>
+                Video Analizi & Fikir
+                <div class="card-subtitle" style="margin-left:auto; margin-bottom:0; margin-top:0">
+                    Önceki videonun analizlerini gir, yapay zeka yeni fikir üretsin
+                </div>
+            </div>
+            <!-- KANAL PROFİLİ YÖNETİMİ -->
+            <div style="background:rgba(255,255,255,0.05); padding:16px; border-radius:var(--radius-sm); border:1px solid var(--border); margin-bottom:20px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                    <div style="font-weight:600; color:var(--text-light); font-size:0.9rem;">📺 Aktif Kanal Profili</div>
+                    <button class="btn btn-primary" onclick="toggleChannelForm()" style="padding:4px 8px; font-size:0.75rem;">➕ Yeni Kanal</button>
+                </div>
+                
+                <select id="channelProfileSelect" onchange="loadSelectedChannel()" style="width:100%; padding:10px; border-radius:var(--radius-sm); border:1px solid var(--border); background:rgba(5, 10, 26, 0.6); color:var(--text); font-family:inherit; outline:none; margin-bottom:0;">
+                </select>
+
+                <div id="channelForm" style="display:none; margin-top:16px; padding-top:16px; border-top:1px solid var(--border);">
+                    <input type="hidden" id="editChannelId">
+                    <input type="text" id="channelNameInput" placeholder="Kanal Profili Adı (Örn: RankVibe Extreme)" style="width:100%; padding:10px; border-radius:var(--radius-sm); border:1px solid var(--border); background:rgba(5, 10, 26, 0.6); color:var(--text); margin-bottom:10px; font-family:inherit; outline:none;">
+                    <textarea id="channelRulesInput" rows="2" placeholder="Kanal Kuralları (Örn: Sadece ekstrem spor no text)" style="width:100%; padding:10px; border-radius:var(--radius-sm); border:1px solid var(--border); background:rgba(5, 10, 26, 0.6); color:var(--text); margin-bottom:10px; font-family:inherit; resize:vertical; outline:none;"></textarea>
+                    <div style="display:flex; gap:10px; margin-bottom:10px;">
+                        <input type="text" id="targetAudienceInput" placeholder="Hedef Kitle" style="flex:1; padding:10px; border-radius:var(--radius-sm); border:1px solid var(--border); background:rgba(5, 10, 26, 0.6); color:var(--text); font-family:inherit; outline:none;">
+                        <input type="text" id="targetAgeInput" placeholder="Yaş Aralığı" style="flex:1; padding:10px; border-radius:var(--radius-sm); border:1px solid var(--border); background:rgba(5, 10, 26, 0.6); color:var(--text); font-family:inherit; outline:none;">
+                    </div>
+                    <div style="display:flex; gap:10px;">
+                        <button class="btn btn-green" onclick="saveChannelProfile()" style="padding:6px 12px; font-size:0.8rem;">💾 Kaydet</button>
+                        <button class="btn btn-primary" onclick="toggleChannelForm()" style="padding:6px 12px; font-size:0.8rem; background:transparent; border:1px solid var(--border);">İptal</button>
+                        <button class="btn btn-primary" id="btnDeleteChannel" onclick="deleteChannelProfile()" style="padding:6px 12px; font-size:0.8rem; background:rgba(220, 38, 38, 0.2); color:#f87171; margin-left:auto; display:none;">🗑️ Sil</button>
+                    </div>
+                </div>
+            </div>
+
+            <textarea id="analyticsInput" rows="5" placeholder="Son videonun YT/Insta/TikTok analiz verilerini buraya yapıştır..." style="width:100%; padding:14px; border-radius:var(--radius-sm); border:1px solid var(--border); background:rgba(5, 10, 26, 0.6); color:var(--text); font-family:inherit; margin-bottom:12px; resize:vertical; outline:none; transition:border-color 0.3s;"></textarea>
+            
+            <div style="display:flex; align-items:center; gap:12px; margin-bottom:16px;">
+                <input type="file" id="analyticsFile" accept="image/*,.txt" style="font-size:0.8rem; color:var(--text-muted);">
+                <span style="font-size:0.8rem; color:var(--text-dim)">(Opsiyonel: Analiz görseli veya .txt yükle)</span>
+            </div>
+
+            <button class="btn btn-primary" id="btnGenerateIdea" onclick="generateIdea()">
+                <span class="spinner"></span>
+                🧠 Fikir Üret
+            </button>
+
+            <hr style="border:0; border-top:1px solid var(--border); margin:24px 0;">
+
+            <div class="card-title" style="font-size:0.95rem; margin-bottom:12px;">
+                <span class="icon">🔍</span>
+                Manuel Arama (Alternatif)
+            </div>
+            <div class="input-group">
+                <input type="text" id="manualSearchInput" placeholder="Arama terimi girin (Örn: funny animals compilation no text)" autocomplete="off">
+                <button class="btn btn-primary" id="btnManualSearch" onclick="searchYoutube(true)">
+                    <span class="spinner"></span>
+                    🔍 Ara
+                </button>
+            </div>
+
+            <div id="ideaResultBox" style="display:none; margin-top:20px; padding:16px; background:rgba(37,99,235,0.05); border:1px solid var(--accent); border-radius:var(--radius-sm);">
+                <div style="font-weight:700; color:var(--accent-light); margin-bottom:8px">💡 Önerilen Video Fikri:</div>
+                <div id="ideaText" style="line-height:1.5; margin-bottom:12px"></div>
+                <div style="font-size:0.85rem; color:var(--text-muted); margin-bottom:16px">
+                    <span>Arama Terimi: </span><code id="ideaTerms" style="background:rgba(0,0,0,0.3); padding:2px 6px; border-radius:4px"></code>
+                </div>
+                <div style="display:flex; gap:12px;">
+                    <button class="btn btn-green" id="btnSearchYt" onclick="searchYoutube()" style="flex:1;">
+                        <span class="spinner"></span>
+                        ✅ Fikri Onayla & Videoları Bul
+                    </button>
+                    <button class="btn btn-primary" id="btnRegenIdea" onclick="generateIdea(true)" style="flex:0.5; background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.2);">
+                        <span class="spinner"></span>
+                        🔄 Yeni Fikir Üret
+                    </button>
+                </div>
+            </div>
+
+            <!-- YT Sonuçları -->
+            <div id="ytResultsSection" style="display:none; margin-top:24px;">
+                <h3 style="font-size:0.95rem; font-weight:600; margin-bottom:12px;">🔍 Bulunan Videolar (Birini Seçin)</h3>
+                <div id="ytResultsGrid" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(250px, 1fr)); gap:16px;">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══ PANEL 2: SAHNE KESİM ═══ -->
+    <section class="panel" id="panel2">
+        <div class="card">
+            <div class="card-title">
+                <span class="icon">✂️</span>
+                Sahne Kesim
+                <div class="card-subtitle" style="margin-left:auto; margin-bottom:0; margin-top:0">
+                    YouTube linkini yapıştır, sahneleri otomatik kes
+                </div>
+            </div>
+            <div class="input-group">
+                <input type="text" id="ytUrl" placeholder="https://www.youtube.com/watch?v=..." autocomplete="off">
+                <button class="btn btn-primary" id="btnCut" onclick="startCutting()">
+                    <span class="spinner"></span>
+                    ✂️ Sahneleri Kes
+                </button>
+            </div>
+            <div class="log-box" id="cutLog"></div>
+        </div>
+    </section>
+
+    <!-- ═══ PANEL 3: KLİP SEÇİMİ ═══ -->
+    <section class="panel" id="panel3">
+        <div class="card">
+            <div class="card-title">
+                <span class="icon">🎞️</span>
+                Klip Seçimi
+            </div>
+            <div class="gallery-controls">
+                <div class="selection-count">
+                    Seçilen: <strong id="selCount">0</strong> / 5
+                    <span style="margin-left:8px; font-size:0.75rem; color:var(--text-muted)">
+                        (İlk seçilen = 5. sıra, son seçilen = 1. sıra)
+                    </span>
+                </div>
+                <div style="display:flex; gap:8px">
+                    <button class="btn btn-primary" id="btnRefresh" onclick="loadClips()" style="padding:10px 16px; font-size:0.8rem">
+                        🔄 Yenile
+                    </button>
+                    <button class="btn btn-primary" id="btnClearSel" onclick="clearSelection()" style="padding:10px 16px; font-size:0.8rem">
+                        ✖ Seçimi Temizle
+                    </button>
+                    <button class="btn btn-primary" id="btnFilterFavs" onclick="toggleFavs()" style="padding:10px 16px; font-size:0.8rem">
+                        🤍 Sadece Favoriler
+                    </button>
+                    <button class="btn btn-primary" id="btnClearAll" onclick="clearAllClips()" style="padding:10px 16px; font-size:0.8rem; background:rgba(220, 38, 38, 0.2); color:#f87171; border:1px solid rgba(220, 38, 38, 0.3);">
+                        🗑️ Tüm Havuzu Temizle
+                    </button>
+                </div>
+            </div>
+            <div id="clipGallery" class="clip-grid">
+                <div class="empty-state">
+                    <div class="icon">📂</div>
+                    <p>Henüz klip yok. Önce sahne kesim işlemi yapın.</p>
+                </div>
+            </div>
+
+            <div style="display:flex; justify-content:space-between; margin-top:20px; gap:12px">
+                <button class="btn btn-primary" onclick="goToStep(2)" style="opacity:0.7">← Geri</button>
+                <button class="btn btn-green" id="btnNext2" onclick="goToStep(4)" disabled>
+                    Video Oluştur →
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══ PANEL 4: VIDEO OLUŞTUR ═══ -->
+    <section class="panel" id="panel4">
+        <div class="card">
+            <div class="card-title">
+                <span class="icon">🎥</span>
+                Ranking Video Oluştur
+            </div>
+
+            <!-- Seçim Özeti -->
+            <div id="selSummary" style="margin-bottom:16px"></div>
+
+            <div id="aiTextSection" style="margin-bottom: 20px; display:none;">
+                <button class="btn btn-primary" id="btnAnalyze" onclick="analyzeClips()" style="width:100%; margin-bottom: 12px; justify-content:center;">
+                    <span class="spinner" id="analyzeSpinner" style="display:none; margin-right:6px;"></span>
+                    🤖 Yapay Zeka Metinlerini Hazırla
+                </button>
+                
+                <div id="aiResults" style="display: none; background: rgba(0,0,0,0.2); padding: 12px; border-radius: var(--radius-sm); border: 1px solid var(--border);">
+                    <div style="margin-bottom: 12px;">
+                        <label style="font-size:0.85rem; color:var(--text-muted); display:block; margin-bottom:4px;">Ana Başlık (Line 2)</label>
+                        <input type="text" id="aiTitle" style="width:100%; padding:8px; border-radius:6px; border:1px solid var(--border); background:rgba(5,10,26,0.6); color:white;">
+                    </div>
+                    <div id="aiClipsContainer" style="display:flex; flex-direction:column; gap:8px;">
+                        <!-- JS ile doldurulacak -->
+                    </div>
+                </div>
+            </div>
+
+            <button class="btn btn-green" id="btnCreate" onclick="startCreating()" style="display:none;">
+                <span class="spinner"></span>
+                🚀 Video Oluştur
+            </button>
+
+            <div class="log-box" id="createLog" style="margin-top:16px"></div>
+
+            <div class="output-section" id="outputSection" style="display:none">
+                <h3 style="font-size:0.95rem; font-weight:600; color:var(--green)">✅ Video Hazır!</h3>
+                <div id="outputList"></div>
+            </div>
+
+            <div style="margin-top:20px">
+                <button class="btn btn-primary" onclick="goToStep(3)" style="opacity:0.7">← Kliplere Dön</button>
+            </div>
+        </div>
+    </section>
+
+</main>
+
+<!-- TRIM MODAL -->
+<div id="trimModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); z-index:1000; align-items:center; justify-content:center; backdrop-filter:blur(5px);">
+    <div style="background:var(--bg-card); padding:24px; border-radius:var(--radius); border:1px solid var(--border); max-width:640px; width:92%; position:relative;">
+
+        <!-- Navigation Arrows -->
+        <button id="navArrowLeft" class="nav-arrow nav-arrow-left" onclick="navigateClip(-1)" title="Önceki Klip (←)">&#8592;</button>
+        <button id="navArrowRight" class="nav-arrow nav-arrow-right" onclick="navigateClip(1)" title="Sonraki Klip (→)">&#8594;</button>
+
+        <!-- Modal Header -->
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;">
+            <div style="font-size:1.1rem; font-weight:700;">✂️ Klibi Kırp &amp; İncele</div>
+            <div id="trimModalNav" style="font-size:0.8rem; color:var(--text-dim); background:rgba(0,0,0,0.3); padding:4px 12px; border-radius:20px; border:1px solid var(--border);">1 / 1</div>
+        </div>
+
+        <!-- Current clip filename -->
+        <div id="trimModalFilename" style="font-size:0.78rem; color:var(--accent-light); margin-bottom:10px; font-family:monospace; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"></div>
+
+        <video id="trimVideo" controls style="width:100%; border-radius:var(--radius-sm); margin-bottom:16px; background:#000; max-height:380px;"></video>
+        
+        <div style="display:flex; gap:16px; margin-bottom:16px;">
+            <div style="flex:1">
+                <label style="font-size:0.85rem; color:var(--text-muted); display:block; margin-bottom:4px;">Başlangıç (sn)</label>
+                <div style="display:flex; gap:8px;">
+                    <input type="number" id="trimStart" step="0.1" min="0" style="width:100%; padding:8px; border-radius:6px; border:1px solid var(--border); background:rgba(5,10,26,0.6); color:white;">
+                    <button class="btn btn-primary" onclick="setTrimTime('start')" style="padding:8px; font-size:0.8rem;" title="Şu anki zamana ayarla">📍</button>
+                </div>
+            </div>
+            <div style="flex:1">
+                <label style="font-size:0.85rem; color:var(--text-muted); display:block; margin-bottom:4px;">Bitiş (sn)</label>
+                <div style="display:flex; gap:8px;">
+                    <input type="number" id="trimEnd" step="0.1" min="0" style="width:100%; padding:8px; border-radius:6px; border:1px solid var(--border); background:rgba(5,10,26,0.6); color:white;">
+                    <button class="btn btn-primary" onclick="setTrimTime('end')" style="padding:8px; font-size:0.8rem;" title="Şu anki zamana ayarla">📍</button>
+                </div>
+            </div>
+        </div>
+
+        <div style="display:flex; gap:12px; justify-content:flex-end;">
+            <button class="btn btn-primary" onclick="closeTrimModal()" style="background:transparent; border:1px solid var(--border);">İptal</button>
+            <button class="btn btn-green" id="btnSaveTrim" onclick="saveTrim()">💾 Kaydet & Kırp</button>
+        </div>
+    </div>
+</div>
+
+<script>
+/* ══════════════════════════════════════════
+   STATE
+   ══════════════════════════════════════════ */
+let selectedClips = [];   // seçim sırasına göre clip filename listesi
+let favoriteClips = [];   // kullanıcının favorilediği klipler
+let showOnlyFavs = false; // filtre durumu
+let isBusy = false;
+
+let channelProfiles = [];
+let previousIdeas = []; // Beğenilmeyen eski fikirleri tutar
+
+document.addEventListener('DOMContentLoaded', () => {
+    loadProfiles();
+    loadFavorites(); // Backend'den favorileri yükle
+});
+
+async function loadFavorites() {
+    try {
+        const resp = await fetch('/api/favorites');
+        const favs = await resp.json();
+        favoriteClips = Array.isArray(favs) ? favs : [];
+        if (window.location.hash === '#step3' || document.getElementById('panel3').classList.contains('visible')) {
+            loadClips();
+        }
+    } catch (err) {
+        console.error("Favoriler yüklenemedi:", err);
+    }
+}
+
+function loadProfiles() {
+    const data = localStorage.getItem('rankvibe_profiles');
+    if (data) channelProfiles = JSON.parse(data);
+    renderChannelProfiles();
+}
+
+function renderChannelProfiles() {
+    const sel = document.getElementById('channelProfileSelect');
+    sel.innerHTML = '<option value="">-- Bir kanal seçin (Veya Yeni Ekle) --</option>';
+    channelProfiles.forEach(p => {
+        sel.innerHTML += `<option value="${p.id}">${p.name}</option>`;
+    });
+}
+
+function toggleChannelForm(isEdit = false) {
+    const form = document.getElementById('channelForm');
+    form.style.display = form.style.display === 'none' ? 'block' : 'none';
+    if(form.style.display !== 'none' && !isEdit) {
+        document.getElementById('channelProfileSelect').value = '';
+        document.getElementById('editChannelId').value = '';
+        document.getElementById('channelNameInput').value = '';
+        document.getElementById('channelRulesInput').value = '';
+        document.getElementById('targetAudienceInput').value = '';
+        document.getElementById('targetAgeInput').value = '';
+        document.getElementById('btnDeleteChannel').style.display = 'none';
+    }
+}
+
+function loadSelectedChannel() {
+    const id = document.getElementById('channelProfileSelect').value;
+    if (!id) {
+        document.getElementById('channelForm').style.display = 'none';
+        return;
+    }
+    const p = channelProfiles.find(x => x.id == id);
+    if (p) {
+        document.getElementById('editChannelId').value = p.id;
+        document.getElementById('channelNameInput').value = p.name;
+        document.getElementById('channelRulesInput').value = p.rules;
+        document.getElementById('targetAudienceInput').value = p.audience;
+        document.getElementById('targetAgeInput').value = p.age;
+        document.getElementById('channelForm').style.display = 'block';
+        document.getElementById('btnDeleteChannel').style.display = 'inline-block';
+    }
+}
+
+function saveChannelProfile() {
+    const idVal = document.getElementById('editChannelId').value;
+    const name = document.getElementById('channelNameInput').value.trim();
+    if(!name) { alert("Kanal adı girmelisiniz!"); return; }
+
+    const p = {
+        name,
+        rules: document.getElementById('channelRulesInput').value.trim(),
+        audience: document.getElementById('targetAudienceInput').value.trim(),
+        age: document.getElementById('targetAgeInput').value.trim()
+    };
+
+    if (idVal) {
+        p.id = idVal;
+        const idx = channelProfiles.findIndex(x => x.id == idVal);
+        if(idx>=0) channelProfiles[idx] = p;
+    } else {
+        p.id = Date.now().toString();
+        channelProfiles.push(p);
+    }
+    
+    localStorage.setItem('rankvibe_profiles', JSON.stringify(channelProfiles));
+    renderChannelProfiles();
+    document.getElementById('channelProfileSelect').value = p.id;
+    document.getElementById('channelForm').style.display = 'none';
+}
+
+function deleteChannelProfile() {
+     const idVal = document.getElementById('editChannelId').value;
+     if(!idVal) return;
+     if(confirm("Bu kanalı silmek istiyor musunuz?")) {
+         channelProfiles = channelProfiles.filter(x => x.id != idVal);
+         localStorage.setItem('rankvibe_profiles', JSON.stringify(channelProfiles));
+         renderChannelProfiles();
+         toggleChannelForm(); // close form
+     }
+}
+
+/* ══════════════════════════════════════════
+   STEP NAVIGATION
+   ══════════════════════════════════════════ */
+function goToStep(n) {
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('visible'));
+    const targetPanel = document.getElementById(`panel${n}`);
+    if (targetPanel) targetPanel.classList.add('visible');
+
+    document.querySelectorAll('.step').forEach((s, i) => {
+        s.classList.remove('active', 'completed');
+        if (i + 1 < n)  s.classList.add('completed');
+        if (i + 1 === n) s.classList.add('active');
+    });
+
+    if (n === 3) loadClips();
+    if (n === 4) renderSummary();
+}
+
+/* ══════════════════════════════════════════
+   FİKİR VE ARAMA (PANEL 1)
+   ══════════════════════════════════════════ */
+async function generateIdea(isRegenerate = false) {
+    if (!isRegenerate) {
+        previousIdeas = []; // Normal butona basıldıysa listeyi sıfırla
+    } else {
+        // Yeni fikir üret tuşuna basıldı, şu anki fikri hafızaya al ki tekrar gelmesin
+        const currentIdea = document.getElementById('ideaText').dataset.titleTr || document.getElementById('ideaText').textContent;
+        if (currentIdea && !previousIdeas.includes(currentIdea)) {
+            previousIdeas.push(currentIdea);
+        }
+    }
+
+    let analytics = document.getElementById('analyticsInput').value.trim();
+    
+    const profileId = document.getElementById('channelProfileSelect').value;
+    let channelRules = "", targetAudience = "", targetAge = "";
+    
+    if (profileId) {
+        const p = channelProfiles.find(x => x.id == profileId);
+        if (p) {
+            channelRules = p.rules;
+            targetAudience = p.audience;
+            targetAge = p.age;
+        }
+    } else {
+       channelRules = document.getElementById('channelRulesInput').value.trim();
+       targetAudience = document.getElementById('targetAudienceInput').value.trim();
+       targetAge = document.getElementById('targetAgeInput').value.trim();
+    }
+    
+    let imageData = null;
+
+    const fileInput = document.getElementById('analyticsFile');
+    if (fileInput.files.length > 0) {
+        const file = fileInput.files[0];
+        if (file.type.startsWith('image/')) {
+            imageData = await getBase64(file);
+        } else if (file.type === 'text/plain') {
+            const text = await file.text();
+            analytics = analytics ? analytics + "\n\n" + text : text;
+        }
+    }
+
+    if (!analytics && !imageData && !channelRules) { alert('Lütfen analiz metni girin veya bir dosya yükleyin!'); return; }
+    if (isBusy) return;
+
+    const btn = isRegenerate ? document.getElementById('btnRegenIdea') : document.getElementById('btnGenerateIdea');
+    btn.disabled = true; btn.classList.add('loading');
+    setGlobalStatus(true);
+    
+    // Normal üretimde ekranı temizleriz, regen'de zaten açık kalabilir ama yine de loading için gizleyelim
+    if (!isRegenerate) {
+        document.getElementById('ideaResultBox').style.display = 'none';
+        document.getElementById('ytResultsSection').style.display = 'none';
+    }
+
+    fetch('/api/generate-idea', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+            analytics, 
+            channel_rules: channelRules, 
+            target_audience: targetAudience,
+            target_age: targetAge,
+            image_data: imageData,
+            previous_ideas: previousIdeas
+        })
+    }).then(r => r.json()).then(data => {
+        btn.disabled = false; btn.classList.remove('loading');
+        setGlobalStatus(false);
+        if (data.error) {
+            alert('Hata: ' + data.error);
+            return;
+        }
+        document.getElementById('ideaResultBox').style.display = 'block';
+
+        // ── Türkçe UI alanları ──
+        const titleTr = data.title_tr || data.idea || '(Başlık üretilemedi)';
+        const descTr  = data.description_tr || '';
+        const ideaEl  = document.getElementById('ideaText');
+        ideaEl.dataset.titleTr = titleTr; // previousIdeas için sakla
+        ideaEl.innerHTML =
+            `<strong style="font-size:1.05rem; color:var(--accent-light); display:block; margin-bottom:6px;">${titleTr}</strong>` +
+            (descTr ? `<span style="font-size:0.9rem; color:var(--text-muted);">${descTr}</span>` : '');
+
+        // ── İngilizce backend alanları ──
+        const termsArr = Array.isArray(data.search_terms)
+            ? data.search_terms
+            : (data.search_terms ? [data.search_terms] : []);
+        const termsEl = document.getElementById('ideaTerms');
+        termsEl.textContent = termsArr.join(' | ');
+        termsEl.dataset.terms      = JSON.stringify(termsArr);
+        termsEl.dataset.clipLabels = JSON.stringify(data.clip_labels || []);
+    }).catch(err => {
+        btn.disabled = false; btn.classList.remove('loading');
+        setGlobalStatus(false);
+        alert('Bağlantı hatası: ' + err);
+    });
+}
+
+function getBase64(file) {
+   return new Promise((resolve, reject) => {
+     const reader = new FileReader();
+     reader.readAsDataURL(file);
+     reader.onload = () => resolve(reader.result);
+     reader.onerror = error => reject(error);
+   });
+}
+
+function searchYoutube(isManual = false) {
+    const terms = isManual 
+        ? document.getElementById('manualSearchInput').value.trim()
+        : document.getElementById('ideaTerms').textContent;
+        
+    if (!terms) {
+        alert("Lütfen bir arama terimi girin veya fikir ürettirin!");
+        return;
+    }
+    if (isBusy) return;
+
+    const btn = isManual ? document.getElementById('btnManualSearch') : document.getElementById('btnSearchYt');
+    btn.disabled = true; btn.classList.add('loading');
+    setGlobalStatus(true);
+    document.getElementById('ytResultsSection').style.display = 'none';
+
+    // search_terms: AI'ın seçimi liste, manual ise string
+    let searchPayload;
+    if (isManual) {
+        searchPayload = terms;  // string olarak gönder
+    } else {
+        const termsEl = document.getElementById('ideaTerms');
+        try {
+            searchPayload = JSON.parse(termsEl.dataset.terms || '[]');
+            if (!Array.isArray(searchPayload) || !searchPayload.length) {
+                searchPayload = terms; // fallback to text
+            }
+        } catch(e) {
+            searchPayload = terms;
+        }
+    }
+
+    fetch('/api/search-youtube', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({search_terms: searchPayload})
+    }).then(r => r.json()).then(videos => {
+        btn.disabled = false; btn.classList.remove('loading');
+        setGlobalStatus(false);
+        if (videos.error) {
+            alert('Hata: ' + videos.error);
+            return;
+        }
+        
+        const grid = document.getElementById('ytResultsGrid');
+        if (!videos.length) {
+            grid.innerHTML = '<div style="grid-column:1/-1; color:var(--text-muted)">Video bulunamadı. Lütfen daha farklı bir analiz verin ya da manuel olarak arama yapın.</div>';
+        } else {
+            grid.innerHTML = videos.map(v => {
+                const thumbUrl = v.thumbnail || `https://i.ytimg.com/vi/${v.id}/mqdefault.jpg`;
+                const mins = Math.floor(v.duration / 60);
+                const secs = v.duration % 60;
+                const durStr = v.duration ? `${mins}:${secs.toString().padStart(2,'0')}` : 'Bilinmiyor';
+                const channelStr = v.channel ? `<div style="font-size:0.72rem; color:var(--text-dim); margin-bottom:4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">📺 ${v.channel}</div>` : '';
+                return `
+                <div style="background:var(--bg-card); border:1px solid ${v.ai_recommended ? 'var(--accent)' : 'var(--border)'}; box-shadow:${v.ai_recommended ? '0 0 15px rgba(37,99,235,0.4)' : 'none'}; border-radius:var(--radius-sm); overflow:hidden; display:flex; flex-direction:column; position:relative; transition:all 0.3s;">
+                    ${v.ai_recommended ? '<div style="position:absolute; top:8px; left:8px; z-index:10;"><span style="background:linear-gradient(135deg, var(--accent), #4f8afa); color:white; padding:6px 12px; border-radius:20px; font-size:0.75rem; font-weight:800; box-shadow:0 4px 15px rgba(0,0,0,0.6);">🤖 Yapay Zeka Tavsiyesi</span></div>' : ''}
+                    <img src="${thumbUrl}" style="width:100%; aspect-ratio:16/9; object-fit:cover; background:#000;" onerror="this.src=''">
+                    <div style="padding:12px; flex:1; display:flex; flex-direction:column;">
+                        <div title="${v.title}" style="font-size:0.85rem; font-weight:600; margin-bottom:4px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;">${v.title}</div>
+                        ${v.ai_recommended && v.ai_reason ? `<div style="font-size:0.75rem; color:var(--accent-light); margin-bottom:6px; font-style:italic;">💡 ${v.ai_reason}</div>` : ''}
+                        ${channelStr}
+                        <div style="font-size:0.75rem; color:var(--text-muted); margin-bottom:12px">⏱ ${durStr}</div>
+                            <div style="display:flex; gap:8px; margin-top:auto;">
+                                <a href="${v.url}" target="_blank" class="btn btn-primary" style="padding:8px; flex:1; justify-content:center; font-size:0.8rem; background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.2); text-decoration:none; color:var(--text);">
+                                    📺 İzle
+                                </a>
+                                <button class="btn btn-primary" style="padding:8px; flex:2; justify-content:center; font-size:0.8rem;" onclick="selectVideoAndCut('${v.url}')">
+                                    ✂️ Bu Videoyu Seç
+                                </button>
+                            </div>
+                        </div>
+                    </div>`;
+            }).join('');
+        }
+        document.getElementById('ytResultsSection').style.display = 'block';
+    }).catch(err => {
+        btn.disabled = false; btn.classList.remove('loading');
+        setGlobalStatus(false);
+        alert('Bağlantı hatası: ' + err);
+    });
+}
+
+function selectVideoAndCut(url) {
+    document.getElementById('ytUrl').value = url;
+    goToStep(2);
+    setTimeout(() => {
+        startCutting();
+    }, 500);
+}
+
+/* ══════════════════════════════════════════
+   STATUS
+   ══════════════════════════════════════════ */
+function setGlobalStatus(busy) {
+    isBusy = busy;
+    const el = document.getElementById('globalStatus');
+    if (busy) {
+        el.className = 'status-badge status-busy';
+        el.textContent = '⚡ İşlem Devam Ediyor';
+    } else {
+        el.className = 'status-badge status-idle';
+        el.textContent = '● Hazır';
+    }
+}
+
+/* ══════════════════════════════════════════
+   SAHNE KESİM (SSE)
+   ══════════════════════════════════════════ */
+function startCutting() {
+    const url = document.getElementById('ytUrl').value.trim();
+    if (!url) { alert('Lütfen YouTube linki gir!'); return; }
+    if (isBusy) return;
+
+    const btn = document.getElementById('btnCut');
+    const log = document.getElementById('cutLog');
+    btn.disabled = true;
+    btn.classList.add('loading');
+    log.innerHTML = '';
+    setGlobalStatus(true);
+
+    fetch('/api/cut-scenes', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({url})
+    }).then(resp => {
+        const reader = resp.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = '';
+
+        function pump() {
+            reader.read().then(({done, value}) => {
+                if (done) { finish(); return; }
+                buffer += decoder.decode(value, {stream: true});
+                const lines = buffer.split('\n');
+                buffer = lines.pop();
+                for (const line of lines) {
+                    if (line.startsWith('data: ')) {
+                        try {
+                            const msg = JSON.parse(line.slice(6));
+                            if (msg.type === 'log') appendLog(log, msg.text);
+                            if (msg.type === 'done') { finish(); return; }
+                        } catch(e) {}
+                    }
+                }
+                pump();
+            });
+        }
+
+        function finish() {
+            btn.disabled = false;
+            btn.classList.remove('loading');
+            setGlobalStatus(false);
+            appendLog(log, '\n─── İşlem tamamlandı ───', 'log-success');
+            // otomatik olarak klip seçim ekranına geç
+            setTimeout(() => goToStep(3), 1500);
+        }
+
+        pump();
+    }).catch(err => {
+        appendLog(log, `Bağlantı hatası: ${err}`, 'log-error');
+        btn.disabled = false;
+        btn.classList.remove('loading');
+        setGlobalStatus(false);
+    });
+}
+
+/* ══════════════════════════════════════════
+   KLİP GALERİSİ
+   ══════════════════════════════════════════ */
+function loadClips() {
+    fetch('/api/clips').then(r => r.json()).then(clips => {
+        const g = document.getElementById('clipGallery');
+        
+        let displayClips = clips;
+        if(showOnlyFavs) {
+            displayClips = clips.filter(c => favoriteClips.includes(c.filename));
+        }
+
+        if (!displayClips.length) {
+            g.innerHTML = `<div class="empty-state"><div class="icon">📂</div><p>${showOnlyFavs ? 'Henüz favori klip seçmediniz.' : 'Henüz klip yok.'}</p></div>`;
+            return;
+        }
+        
+        g.innerHTML = displayClips.map(c => {
+            const isSelected = selectedClips.includes(c.filename);
+            const isFav = favoriteClips.includes(c.filename);
+            const order = isSelected ? selectedClips.indexOf(c.filename) + 1 : '';
+            const rankLabel = order ? (5 - order + 1) : '';
+            
+            // Dosya adından başlığı ayıklama (Örn: Pool Fails_001_FAIL.mp4 -> Pool Fails)
+            let videoTitle = "";
+            if (c.filename.includes("_0")) {
+                videoTitle = c.filename.split("_0")[0];
+            }
+
+            return `
+                <div class="clip-card ${isSelected ? 'selected' : ''}"
+                     data-file="${c.filename}"
+                     data-order="${order ? '#' + rankLabel : ''}"
+                     onclick="toggleClip('${c.filename}')">
+                    ${c.thumbnail
+                        ? `<img class="clip-thumb" src="/thumbnails/${c.thumbnail}" alt="${c.filename}" loading="lazy">`
+                        : `<div class="clip-thumb-placeholder">🎬</div>`}
+                    <div style="position:absolute; top:8px; left:8px; z-index:10; display:flex; gap:4px">
+                        <button onclick="toggleFavorite('${c.filename}', event)" style="background:rgba(0,0,0,0.8); border:1px solid rgba(255,255,255,0.3); color:${isFav ? '#ef4444' : '#fff'}; cursor:pointer; padding:4px 6px; border-radius:4px; font-size:0.8rem; transition:background 0.2s;" title="Favorilere Ekle">
+                            ${isFav ? '❤️' : '🤍'}
+                        </button>
+                        <button onclick="event.stopPropagation(); openTrimModal('${c.filename}')" style="background:rgba(0,0,0,0.8); border:1px solid rgba(255,255,255,0.3); color:#fff; cursor:pointer; padding:4px 8px; border-radius:4px; font-size:0.75rem; transition:background 0.2s;">
+                            ✂️ Kırp
+                        </button>
+                    </div>
+                    <div style="position:absolute; top:8px; right:8px; z-index:10; display:flex; gap:4px">
+                        <button onclick="event.stopPropagation(); deleteSingleClip('${c.filename}')" style="background:rgba(220,38,38,0.8); border:1px solid rgba(255,255,255,0.3); color:#fff; cursor:pointer; padding:4px 6px; border-radius:4px; font-size:0.8rem; transition:background 0.2s;" title="Bu klibi sil">
+                            🗑️
+                        </button>
+                        <a href="/clips/${c.filename}" target="_blank" onclick="event.stopPropagation()" style="background:rgba(0,0,0,0.8); border:1px solid rgba(255,255,255,0.3); color:#fff; text-decoration:none; padding:4px 8px; border-radius:4px; font-size:0.75rem; transition:background 0.2s;">
+                            ▶️ İzle
+                        </a>
+                    </div>
+                    <div class="clip-info">
+                        ${videoTitle ? `<div style="font-size:0.7rem; color:var(--text-dim); margin-bottom:4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${videoTitle}">📺 ${videoTitle}</div>` : ''}
+                        <div class="clip-name">${c.filename}</div>
+                        <div class="clip-size">${c.size_mb} MB</div>
+                    </div>
+                </div>`;
+        }).join('');
+        updateSelCount();
+    });
+}
+
+function toggleFavs() {
+    showOnlyFavs = !showOnlyFavs;
+    const btn = document.getElementById('btnFilterFavs');
+    if (showOnlyFavs) {
+        btn.innerHTML = "❤️ Tümünü Göster";
+        btn.style.background = "rgba(239, 68, 68, 0.2)";
+        btn.style.color = "#fca5a5";
+        btn.style.borderColor = "rgba(239, 68, 68, 0.4)";
+    } else {
+        btn.innerHTML = "🤍 Sadece Favoriler";
+        btn.style.background = "rgba(255,255,255,0.05)";
+        btn.style.color = "var(--text)";
+        btn.style.borderColor = "rgba(255,255,255,0.1)";
+    }
+    loadClips();
+}
+
+async function toggleFavorite(filename, e) {
+    if(e) e.stopPropagation();
+    
+    try {
+        const resp = await fetch('/api/toggle-favorite', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({filename})
+        });
+        const data = await resp.json();
+        if (data.success) {
+            favoriteClips = data.favorites;
+            loadClips(); // Re-render iconlar güncellensin
+        } else {
+            alert("Favori işlemi başarısız: " + data.error);
+        }
+    } catch (err) {
+        alert("Bağlantı hatası: " + err);
+    }
+}
+
+function toggleClip(filename) {
+    const idx = selectedClips.indexOf(filename);
+    if (idx >= 0) {
+        selectedClips.splice(idx, 1);
+    } else {
+        if (selectedClips.length >= 5) {
+            alert('En fazla 5 klip seçebilirsin! Birini kaldır önce.');
+            return;
+        }
+        selectedClips.push(filename);
+    }
+    // Re-render cards
+    document.querySelectorAll('.clip-card').forEach(card => {
+        const f = card.dataset.file;
+        const i = selectedClips.indexOf(f);
+        if (i >= 0) {
+            card.classList.add('selected');
+            card.dataset.order = '#' + (5 - i);
+        } else {
+            card.classList.remove('selected');
+            card.dataset.order = '';
+        }
+    });
+    updateSelCount();
+}
+
+function clearSelection() {
+    selectedClips = [];
+    document.querySelectorAll('.clip-card').forEach(c => {
+        c.classList.remove('selected');
+        c.dataset.order = '';
+    });
+    updateSelCount();
+}
+
+let currentTrimFile = "";
+let currentTrimIndex = -1;  // galeri sırasındaki index
+let galleryClipList = [];   // loadClips() sonrası güncellenen tüm klipler
+
+function openTrimModal(filename) {
+    // Galeriden mevcut klip listesini al
+    const allCards = Array.from(document.querySelectorAll('.clip-card'));
+    galleryClipList = allCards.map(c => c.dataset.file);
+    currentTrimIndex = galleryClipList.indexOf(filename);
+    _loadTrimModalForIndex(currentTrimIndex);
+}
+
+function _loadTrimModalForIndex(idx) {
+    if (idx < 0 || idx >= galleryClipList.length) return;
+    currentTrimIndex = idx;
+    currentTrimFile = galleryClipList[idx];
+
+    document.getElementById('trimModal').style.display = 'flex';
+    document.getElementById('trimModalFilename').textContent = currentTrimFile;
+    document.getElementById('trimModalNav').textContent = `${idx + 1} / ${galleryClipList.length}`;
+    updateNavArrows();
+
+    const video = document.getElementById('trimVideo');
+    video.src = "/clips/" + currentTrimFile + "?t=" + Date.now();
+    video.load();
+    video.onloadedmetadata = () => {
+        document.getElementById('trimStart').value = 0;
+        document.getElementById('trimEnd').value = video.duration.toFixed(1);
+    };
+}
+
+function navigateClip(direction) {
+    const newIdx = currentTrimIndex + direction;
+    if (newIdx < 0 || newIdx >= galleryClipList.length) return;
+    // Pause current video before switching
+    const video = document.getElementById('trimVideo');
+    video.pause();
+    _loadTrimModalForIndex(newIdx);
+}
+
+function updateNavArrows() {
+    const leftBtn  = document.getElementById('navArrowLeft');
+    const rightBtn = document.getElementById('navArrowRight');
+    if (!leftBtn || !rightBtn) return;
+    leftBtn.disabled  = (currentTrimIndex <= 0);
+    rightBtn.disabled = (currentTrimIndex >= galleryClipList.length - 1);
+}
+
+// Klavye kısayolları: ← → tuşları modal açıkken çalışır
+document.addEventListener('keydown', (e) => {
+    if (document.getElementById('trimModal').style.display !== 'flex') return;
+    if (e.key === 'ArrowLeft')  { e.preventDefault(); navigateClip(-1); }
+    if (e.key === 'ArrowRight') { e.preventDefault(); navigateClip(1);  }
+    if (e.key === 'Escape')     { closeTrimModal(); }
+});
+
+function closeTrimModal() {
+    document.getElementById('trimModal').style.display = 'none';
+    const video = document.getElementById('trimVideo');
+    video.pause();
+    video.src = "";
+}
+
+function setTrimTime(type) {
+    const video = document.getElementById('trimVideo');
+    if(type === 'start') document.getElementById('trimStart').value = video.currentTime.toFixed(1);
+    if(type === 'end') document.getElementById('trimEnd').value = video.currentTime.toFixed(1);
+}
+
+function saveTrim() {
+    const s = parseFloat(document.getElementById('trimStart').value);
+    const e = parseFloat(document.getElementById('trimEnd').value);
+    const btn = document.getElementById('btnSaveTrim');
+
+    if(isNaN(s) || isNaN(e) || s >= e) {
+        alert("Geçersiz kırpma saniyeleri!");
+        return;
+    }
+
+    btn.disabled = true;
+    btn.innerHTML = "<span class='spinner' style='display:inline-block; margin-right:6px;'></span> Kırpılıyor...";
+    
+    fetch('/api/trim-clip', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({filename: currentTrimFile, start: s, end: e})
+    }).then(r => r.json()).then(res => {
+        btn.disabled = false;
+        btn.innerHTML = "💾 Kaydet & Kırp";
+        if(res.error) {
+            alert("Hata: " + res.error);
+        } else {
+            closeTrimModal();
+            loadClips(); // Galeriyi yenile ki küçük resim güncellensin
+        }
+    }).catch(err => {
+        btn.disabled = false;
+        btn.innerHTML = "💾 Kaydet & Kırp";
+        alert("Bağlantı hatası: " + err);
+    });
+}
+
+function clearAllClips() {
+    if(!confirm("Havuzdaki tüm klipleri silmek istediğinize emin misiniz? (Favorileriniz silinmeyecek!)")) return;
+    
+    const btn = document.getElementById('btnClearAll');
+    btn.disabled = true;
+    btn.innerHTML = "<span class='spinner' style='display:inline-block; margin-right:6px;'></span> Siliniyor...";
+    
+    fetch('/api/clear-clips', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({exclude: favoriteClips})
+    })
+    .then(r => r.json()).then(res => {
+        btn.disabled = false;
+        btn.innerHTML = "🗑️ Tüm Havuzu Temizle";
+        if(res.error) alert("Hata: " + res.error);
+        else {
+            // Favoriler silinmediği için selectedClips içindeki favori olmayanları da temizlemeliyiz.
+            selectedClips = selectedClips.filter(c => favoriteClips.includes(c)); 
+            loadClips();
+        }
+    }).catch(err => {
+        btn.disabled = false;
+        btn.innerHTML = "🗑️ Tüm Havuzu Temizle";
+        alert("Hata: " + err);
+    });
+}
+
+function deleteSingleClip(filename) {
+    if(!confirm("Bu klibi tamamen silmek istediğinize emin misiniz?")) return;
+    
+    fetch('/api/delete-clip', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({filename: filename})
+    }).then(r => r.json()).then(res => {
+        if(res.error) alert("Hata: " + res.error);
+        else {
+            if (selectedClips.includes(filename)) {
+                selectedClips.splice(selectedClips.indexOf(filename), 1);
+            }
+            if (favoriteClips.includes(filename)) {
+                favoriteClips.splice(favoriteClips.indexOf(filename), 1);
+            }
+            loadClips();
+        }
+    }).catch(err => alert("Bağlantı hatası: " + err));
+}
+
+function updateSelCount() {
+    document.getElementById('selCount').textContent = selectedClips.length;
+    document.getElementById('btnNext2').disabled = selectedClips.length !== 5;
+}
+
+/* ══════════════════════════════════════════
+   VIDEO OLUŞTUR (SSE)
+   ══════════════════════════════════════════ */
+let currentAiData = null;
+let _lastRenderedSelection = [];  // Hangi kliplerin seçili olduğunu takip eder
+
+function renderSummary() {
+    const el = document.getElementById('selSummary');
+    if (!selectedClips.length) {
+        el.innerHTML = '<p style="color:var(--text-muted)">Klip seçilmedi.</p>';
+        document.getElementById('aiTextSection').style.display = 'none';
+        document.getElementById('btnCreate').style.display = 'none';
+        _lastRenderedSelection = [];
+        currentAiData = null;
+        return;
+    }
+
+    // Klip seçimi değişmemişse mevcut AI verilerini koru
+    const selectionChanged = JSON.stringify(selectedClips) !== JSON.stringify(_lastRenderedSelection);
+    if (selectionChanged) {
+        _lastRenderedSelection = [...selectedClips];
+        // Seçim değişti: analiz sonuçlarını sıfırla
+        currentAiData = null;
+        document.getElementById('aiResults').style.display = 'none';
+        document.getElementById('btnCreate').style.display = 'none';
+    } else {
+        // Seçim aynı: mevcut AI verilerini koru, sadece btnCreate görünürlüğünü güncelle
+        if (currentAiData) {
+            document.getElementById('btnCreate').style.display = 'flex';
+        }
+    }
+
+    document.getElementById('aiTextSection').style.display = 'block';
+    
+    el.innerHTML = `
+        <table style="width:100%; border-collapse:collapse; font-size:0.82rem">
+            <thead>
+                <tr style="text-align:left; color:var(--text-dim); border-bottom:1px solid var(--border)">
+                    <th style="padding:8px 4px">Sıra</th>
+                    <th style="padding:8px 4px">Klip</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${selectedClips.map((f, i) => {
+                    const rank = 5 - i;
+                    const colors = {5:'var(--text-muted)',4:'var(--text-muted)',3:'var(--accent-light)',2:'var(--orange)',1:'var(--green)'};
+                    return `<tr style="border-bottom:1px solid var(--border)">
+                        <td style="padding:8px 4px; font-weight:700; color:${colors[rank]}">${rank}. sıra</td>
+                        <td style="padding:8px 4px; color:var(--text)">${f}</td>
+                    </tr>`;
+                }).join('')}
+            </tbody>
+        </table>
+    `;
+
+    // Yeni seçim yapılmışsa, yapay zeka analizini otomatik başlat (kullanıcıyı uğraştırmamak için)
+    if (selectionChanged) {
+        setTimeout(analyzeClips, 100);
+    }
+}
+
+function analyzeClips() {
+    if (selectedClips.length !== 5) { alert('5 klip seçmelisin!'); return; }
+    
+    const btn = document.getElementById('btnAnalyze');
+    const spinner = document.getElementById('analyzeSpinner');
+    btn.disabled = true;
+    spinner.style.display = 'inline-block';
+    
+    fetch('/api/analyze-clips', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({clips: selectedClips})
+    }).then(r => r.json()).then(res => {
+        btn.disabled = false;
+        spinner.style.display = 'none';
+        if(res.error) {
+            alert("Hata: " + res.error);
+            return;
+        }
+        
+        currentAiData = res;
+        
+        document.getElementById('aiResults').style.display = 'block';
+        document.getElementById('aiTitle').value = res.title_data.title_line2 || "";
+        document.getElementById('aiTitle').addEventListener('input', () => {
+            if (previewTimeout) clearTimeout(previewTimeout);
+            previewTimeout = setTimeout(() => {
+                for (let i = 0; i < 5; i++) requestPreview(i);
+            }, 300);
+        });
+        
+        const container = document.getElementById('aiClipsContainer');
+        container.innerHTML = '';
+        
+        res.clips.forEach((clipData, idx) => {
+            const rank = 5 - idx;
+            const div = document.createElement('div');
+            div.style.cssText = "display:flex; gap:8px; align-items:center; background:rgba(0,0,0,0.3); padding:8px; border-radius:4px;";
+            div.innerHTML = `
+                <div style="font-weight:bold; width: 50px; color:var(--accent-light); font-size: 0.8rem; text-align:center;">${rank}.<br>Sıra</div>
+                <div style="width: 54px; height: 96px; background: #000; border-radius:4px; overflow:hidden; flex-shrink:0;">
+                    <img id="aiPreviewImg_${idx}" src="" style="width:100%; height:100%; object-fit:cover; transition: opacity 0.3s;" alt="...">
+                </div>
+                <div style="flex:2; display:flex; flex-direction:column; gap:6px;">
+                    <input type="text" id="aiClipDesc_${idx}" value="${clipData.description || ""}" oninput="handlePreviewChange(${idx})" style="width:100%; padding:6px; border-radius:4px; border:1px solid var(--border); background:rgba(5,10,26,0.6); color:white;" placeholder="Açıklama">
+                    <div style="display:flex; gap:6px; align-items:center;">
+                        <span style="font-size:0.75rem; color:var(--text-muted);">X-Offset:</span>
+                        <input type="number" id="aiClipXOffset_${idx}" value="${clipData.x_offset || 0}" oninput="handlePreviewChange(${idx})" style="width:80px; padding:6px; border-radius:4px; border:1px solid var(--border); background:rgba(5,10,26,0.6); color:white;">
+                    </div>
+                </div>
+            `;
+            container.appendChild(div);
+            
+            // İlk yüklemede önizlemeyi tetikle
+            setTimeout(() => requestPreview(idx), idx * 100);
+        });
+        
+        document.getElementById('btnCreate').style.display = 'flex';
+        
+    }).catch(err => {
+        btn.disabled = false;
+        spinner.style.display = 'none';
+        alert("Bağlantı hatası: " + err);
+    });
+}
+
+let previewTimeout = null;
+
+function handlePreviewChange(idx) {
+    if (previewTimeout) clearTimeout(previewTimeout);
+    previewTimeout = setTimeout(() => {
+        requestPreview(idx);
+        // Eğer 5. sıra (idx=0) değiştirilirse, sonraki sıralardaki önizlemelerin de güncellenmesi gerekebilir 
+        // çünkü make_overlay descriptions_so_far alıyor. Ama basitlik adına sadece kendini güncelleyelim.
+    }, 300);
+}
+
+function requestPreview(idx) {
+    if (!currentAiData) return;
+    
+    // Güncel input verilerini al
+    currentAiData.title_data.title_line2 = document.getElementById('aiTitle').value;
+    for (let i = 0; i <= idx; i++) {
+        const descEl = document.getElementById(`aiClipDesc_${i}`);
+        const xEl = document.getElementById(`aiClipXOffset_${i}`);
+        if(descEl) currentAiData.clips[i].description = descEl.value;
+        if(xEl) currentAiData.clips[i].x_offset = parseInt(xEl.value) || 0;
+    }
+    
+    const filename = selectedClips[idx];
+    
+    fetch('/api/preview-frame', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+            filename: filename,
+            clip_index: idx,
+            title_data: currentAiData.title_data,
+            clips_data: currentAiData.clips
+        })
+    }).then(r => r.json()).then(res => {
+        if(res.image) {
+            const img = document.getElementById(`aiPreviewImg_${idx}`);
+            img.style.opacity = 0.5; 
+            setTimeout(() => {
+                img.src = res.image;
+                img.style.opacity = 1;
+            }, 50);
+        }
+    }).catch(err => console.error("Preview error", err));
+}
+
+function startCreating() {
+    if (selectedClips.length !== 5) { alert('5 klip seçmelisin!'); return; }
+    if (isBusy) return;
+
+    // Güncel metinleri DOM'dan oku (analiz yapılmışsa)
+    if (currentAiData) {
+        currentAiData.title_data.title_line2 = document.getElementById('aiTitle').value;
+        currentAiData.clips.forEach((clipData, idx) => {
+            const descEl = document.getElementById(`aiClipDesc_${idx}`);
+            const xEl    = document.getElementById(`aiClipXOffset_${idx}`);
+            if (descEl) clipData.description = descEl.value;
+            if (xEl)    clipData.x_offset    = parseInt(xEl.value) || 0;
+        });
+    }
+
+    const btn = document.getElementById('btnCreate');
+    const log = document.getElementById('createLog');
+    btn.disabled = true;
+    btn.classList.add('loading');
+    log.innerHTML = '';
+    document.getElementById('outputSection').style.display = 'none';
+    setGlobalStatus(true);
+
+    fetch('/api/create-video', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+            clips: selectedClips,
+            title_data: currentAiData ? currentAiData.title_data : null,
+            clips_data: currentAiData ? currentAiData.clips : null
+        })
+    }).then(resp => {
+        const reader = resp.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = '';
+        let capturedTitle = "Daily Ranked Fails";
+
+        function pump() {
+            reader.read().then(({done, value}) => {
+                if (done) { finish(); return; }
+                buffer += decoder.decode(value, {stream: true});
+                const lines = buffer.split('\n');
+                buffer = lines.pop();
+                for (const line of lines) {
+                    if (line.startsWith('data: ')) {
+                        try {
+                            const msg = JSON.parse(line.slice(6));
+                            if (msg.type === 'log') {
+                                appendLog(log, msg.text);
+                                const match = msg.text.match(/Video başlığı:\s*'([^']+)'/);
+                                if (match) {
+                                    capturedTitle = match[1];
+                                }
+                            }
+                            if (msg.type === 'done') { finish(); return; }
+                        } catch(e) {}
+                    }
+                }
+                pump();
+            });
+        }
+
+        function finish() {
+            btn.disabled = false;
+            btn.classList.remove('loading');
+            setGlobalStatus(false);
+            appendLog(log, '\n─── Video oluşturma tamamlandı ───', 'log-success');
+            loadOutputVideos(capturedTitle);
+        }
+
+        pump();
+    }).catch(err => {
+        appendLog(log, `Hata: ${err}`, 'log-error');
+        btn.disabled = false;
+        btn.classList.remove('loading');
+        setGlobalStatus(false);
+    });
+}
+
+function loadOutputVideos(title) {
+    fetch('/api/output-videos').then(r => r.json()).then(videos => {
+        if (!videos.length) return;
+        const section = document.getElementById('outputSection');
+        const list = document.getElementById('outputList');
+        section.style.display = 'block';
+        
+        let finalTitle = `Ranking ${title} 💥 #shorts #fails #rankvibe`;
+        
+        let titleHtml = `
+            <div style="background: rgba(37,99,235,0.08); border: 1px solid rgba(37,99,235,0.2); padding: 16px; border-radius: var(--radius-sm); margin-bottom: 16px;">
+                <h4 style="font-size: 0.85rem; color: var(--accent-light); margin-bottom: 8px;">📋 YouTube Başlığı <span style="color:var(--text-dim)">(Kopyalamak için tıklayın)</span></h4>
+                <div style="display:flex; gap: 12px; align-items:center;">
+                    <input type="text" id="ytTitleOutput" value="${finalTitle}" readonly style="flex:1; background:rgba(0,0,0,0.3); border:1px solid var(--border); color:var(--text); padding:10px 14px; border-radius:6px; font-size:0.9rem; outline:none; transition: border-color 0.3s;" onclick="this.select()">
+                    <button class="btn btn-primary" onclick="copyYtTitle(this)" style="padding:10px 16px;">📋 Kopyala</button>
+                </div>
+            </div>
+        `;
+
+        list.innerHTML = titleHtml + videos.map(v => `
+            <div class="download-card">
+                <span>🎬 ${v.filename} <span style="color:var(--text-muted); font-size:0.8rem">(${v.size_mb} MB)</span></span>
+                <a href="/output/${v.filename}" download>⬇ İndir</a>
+            </div>
+        `).join('');
+    });
+}
+
+function copyYtTitle(btn) {
+    const el = document.getElementById('ytTitleOutput');
+    el.select();
+    document.execCommand('copy');
+    const originalText = btn.innerHTML;
+    btn.innerHTML = "✅ Kopyalandı!";
+    btn.style.background = "linear-gradient(135deg, #16a34a, #22c55e)";
+    setTimeout(() => {
+        btn.innerHTML = originalText;
+        btn.style.background = "";
+    }, 2000);
+}
+
+/* ══════════════════════════════════════════
+   LOG HELPER
+   ══════════════════════════════════════════ */
+function appendLog(el, text, cls) {
+    const line = document.createElement('div');
+    // color-code based on content
+    if (cls) {
+        line.className = cls;
+    } else if (text.includes('✅') || text.includes('✓') || text.includes('BİTTİ')) {
+        line.className = 'log-success';
+    } else if (text.includes('❌') || text.includes('HATA') || text.includes('error')) {
+        line.className = 'log-error';
+    } else if (text.includes('⚠️') || text.includes('UYARI') || text.includes('Rate limit')) {
+        line.className = 'log-warn';
+    }
+    line.textContent = text;
+    el.appendChild(line);
+    el.scrollTop = el.scrollHeight;
+}
+</script>
+</body>
+</html>

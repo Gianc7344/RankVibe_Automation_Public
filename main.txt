@@ -1,0 +1,445 @@
+import os
+import subprocess
+import random
+import warnings
+from collections import defaultdict
+
+warnings.filterwarnings("ignore")
+
+from yt_dlp import YoutubeDL
+from scenedetect import SceneManager, ContentDetector, open_video
+from tqdm import tqdm
+
+# ==========================
+# ⚙️ AYARLAR
+# ==========================
+FFMPEG_PATH = r"C:\ffmpeg\bin\ffmpeg.exe"   # ffmpeg.exe tam yolu
+DOWNLOAD_DIR = "downloads"
+CLIP_DIR = "clips"
+THUMBNAIL_DIR = "thumbnails"
+
+THRESHOLD = 27.0
+MIN_SCENE_LENGTH = 2.0      # ✅ En az 2 saniye
+MAX_SCENE_LENGTH = 20.0     # ✅ En fazla 20 saniye
+MAX_VIDEO_DURATION = 1200   # ✅ Maksimum işlenecek süre (20 dakika)
+
+GENERATE_THUMBNAILS = True  # ✅ Thumbnail oluştur
+ADD_TEXT_OVERLAY = False    # ✅ Caption'ı videoya yaz (isteğe bağlı)
+USE_HYBRID_ENCODING = True  # ✅ Önce hızlı, başarısızsa güvenli encode
+
+os.makedirs(DOWNLOAD_DIR, exist_ok=True)
+os.makedirs(CLIP_DIR, exist_ok=True)
+os.makedirs(THUMBNAIL_DIR, exist_ok=True)
+
+# ==========================
+# 🎯 CAPTION HAVUZU (GENİŞLETİLDİ)
+# ==========================
+CAPTIONS = {
+    "fail": [
+        "OH NO OH NO",
+        "GAME OVER",
+        "THAT'LL HURT",
+        "COME ON",
+        "NOT LIKE THIS",
+        "RIP",
+        "YIKES",
+        "OOF"
+    ],
+    "shock": [
+        "OH MY GOD",
+        "WHAT THE HELL",
+        "BRO WHAT",
+        "NO WAY",
+        "BRUH",
+        "INSANE",
+        "UNREAL",
+        "CRAZY"
+    ],
+    "funny": [
+        "OH HELL NO",
+        "AIN'T NO WAY",
+        "BRO REALLY",
+        "NAH MAN",
+        "LMAO",
+        "DEAD",
+        "STOP IT",
+        "WHY THO"
+    ],
+    "unexpected": [
+        "READY FOR IT",
+        "WAIT FOR IT",
+        "NOW WATCH THIS",
+        "HERE WE GO",
+        "WATCH CLOSELY",
+        "YOU'LL SEE",
+        "CHECK THIS OUT",
+        "LOOK AT THIS"
+    ]
+}
+
+MAX_REPEAT_RATIO = 0.12
+caption_usage = defaultdict(int)
+total_captions = 0
+last_caption = None  # ✅ Ardışık tekrarı engelle
+
+# ==========================
+# 🧹 ESKİ KLİPLERİ TEMİZLE
+# ==========================
+def cleanup_old_clips():
+    """Eski klipleri temizle"""
+    clip_count = len([f for f in os.listdir(CLIP_DIR) if f.endswith('.mp4')])
+    thumb_count = len([f for f in os.listdir(THUMBNAIL_DIR) if f.endswith('.jpg')])
+    
+    if clip_count > 0 or thumb_count > 0:
+        print(f"\n⚠️  Klasörlerde {clip_count} klip ve {thumb_count} thumbnail var.")
+        response = input("Silmek ister misin? (e/h): ").strip().lower()
+        
+        if response == 'e':
+            for f in os.listdir(CLIP_DIR):
+                try:
+                    os.remove(os.path.join(CLIP_DIR, f))
+                except:
+                    pass
+            for f in os.listdir(THUMBNAIL_DIR):
+                try:
+                    os.remove(os.path.join(THUMBNAIL_DIR, f))
+                except:
+                    pass
+            print("✅ Eski dosyalar temizlendi.")
+        else:
+            print("⚠️  Eski dosyalar üzerine yazılacak.")
+
+# ==========================
+# 🎬 VIDEO İNDİR (FIXED + IMPROVED)
+# ==========================
+def download_video(url):
+    print("\n🎬 Video indiriliyor...")
+
+    output_path = os.path.join(DOWNLOAD_DIR, "video.mp4")
+
+    # ❗ Eski bozuk dosyayı temizle
+    if os.path.exists(output_path):
+        os.remove(output_path)
+
+    ydl_opts = {
+        "format": "bestvideo+bestaudio/best",
+        "outtmpl": output_path,
+        "merge_output_format": "mp4",
+        "ffmpeg_location": FFMPEG_PATH,
+        "quiet": True,
+        "no_warnings": True,
+        
+        # ✅ 403 FORBIDDEN FIX
+        "cookiefile": None,
+        "extractor_args": {"youtube": {"player_client": ["android", "web"]}},
+        "http_headers": {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+        },
+        
+        "postprocessors": [{
+            "key": "FFmpegVideoConvertor",
+            "preferedformat": "mp4"
+        }],
+    }
+
+    with YoutubeDL(ydl_opts) as ydl:
+        ydl.download([url])
+
+    # ❗ Boş dosya kontrolü
+    if not os.path.exists(output_path) or os.path.getsize(output_path) == 0:
+        raise RuntimeError("İndirilen video boş (0 byte). yt-dlp veya ffmpeg sorunu.")
+
+    return output_path
+
+# ==========================
+# 🎞️ SAHNE TESPİT (IMPROVED)
+# ==========================
+def detect_scenes(video_path):
+    print("\n👀 Sahne Analizi...")
+
+    video = open_video(video_path)
+    duration = video.duration.get_seconds()
+    
+    # ✅ Süre kontrolü
+    if duration > MAX_VIDEO_DURATION:
+        print(f"⚠️  Video çok uzun ({duration/60:.1f} dk). İlk {MAX_VIDEO_DURATION/60:.0f} dakika işlenecek.")
+    
+    scene_manager = SceneManager()
+    scene_manager.add_detector(ContentDetector(threshold=THRESHOLD))
+
+    scene_manager.detect_scenes(video=video)
+    scenes = scene_manager.get_scene_list()
+
+    print(f"✅ {len(scenes)} sahne bulundu")
+    
+    return scenes, duration
+
+# ==========================
+# 🔍 SAHNE FİLTRELEME
+# ==========================
+def filter_scene(start, end, duration, video_duration):
+    """Kalitesiz sahneleri ele"""
+    
+    # Çok kısa
+    if duration < MIN_SCENE_LENGTH:
+        return False
+    
+    # Çok uzun
+    if duration > MAX_SCENE_LENGTH:
+        return False
+    
+    # Video başı/sonu (genelde intro/outro)
+    if start < 2.0 or (video_duration - end) < 2.0:
+        return False
+    
+    # Maksimum süreyi aşmış kısımlar
+    if start > MAX_VIDEO_DURATION:
+        return False
+    
+    return True
+
+# ==========================
+# 🧠 CAPTION SEÇİMİ (IMPROVED)
+# ==========================
+def choose_caption(position_ratio):
+    global total_captions, last_caption
+
+    if position_ratio < 0.15:
+        category = "unexpected"
+    elif position_ratio < 0.45:
+        category = random.choice(["funny", "unexpected"])
+    elif position_ratio < 0.75:
+        category = random.choice(["fail", "shock"])
+    else:
+        category = random.choice(["fail", "shock", "funny"])
+
+    pool = CAPTIONS[category].copy()
+    random.shuffle(pool)
+
+    # ✅ Tekrar kontrolü + ardışık caption engelleme
+    for caption in pool:
+        if caption == last_caption:  # Ardışık aynı caption'ı atla
+            continue
+        if caption_usage[caption] / max(1, total_captions) < MAX_REPEAT_RATIO:
+            caption_usage[caption] += 1
+            total_captions += 1
+            last_caption = caption
+            return caption
+
+    # Hiçbiri uygun değilse rastgele seç ama son caption'dan farklı olsun
+    available = [c for c in pool if c != last_caption]
+    if not available:
+        available = pool
+    
+    caption = random.choice(available)
+    caption_usage[caption] += 1
+    total_captions += 1
+    last_caption = caption
+    return caption
+
+# ==========================
+# 🖼️ AKILLI THUMBNAIL OLUŞTUR
+# ==========================
+def extract_thumbnail(video_file, output_jpg, duration):
+    """Klipin ortasından thumbnail al"""
+    try:
+        # ✅ Klipin ortasından al (daha iyi sonuç)
+        middle_time = max(0.5, duration / 2)
+        
+        subprocess.run([
+            FFMPEG_PATH,
+            "-i", video_file,
+            "-ss", str(middle_time),
+            "-vframes", "1",
+            "-q:v", "2",  # Yüksek kalite
+            "-y",
+            output_jpg
+        ], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True, timeout=10)
+    except:
+        pass  # Thumbnail hatası kritik değil
+
+# ==========================
+# 📝 TEXT OVERLAY EKLE (İsteğe Bağlı)
+# ==========================
+def add_text_overlay(input_file, output_file, text):
+    """Caption'ı videoya yaz"""
+    try:
+        # Özel karakterleri escape et
+        safe_text = text.replace("'", "\\'").replace(":", "\\:")
+        
+        subprocess.run([
+            FFMPEG_PATH,
+            "-i", input_file,
+            "-vf", f"drawtext=text='{safe_text}':fontsize=60:fontcolor=white:bordercolor=black:borderw=3:x=(w-text_w)/2:y=h-120",
+            "-c:a", "copy",
+            "-y",
+            output_file
+        ], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True, timeout=30)
+        
+        # Başarılıysa eski dosyayı sil, yenisini kullan
+        os.remove(input_file)
+        os.rename(output_file, input_file)
+    except:
+        # Overlay hatası olursa orijinali koru
+        if os.path.exists(output_file):
+            os.remove(output_file)
+
+# ==========================
+# ⚡ HİBRİT ENCODE (Hızlı + Güvenilir)
+# ==========================
+def encode_clip(video_path, start, duration, output_file):
+    """Önce hızlı (-c copy), başarısızsa güvenli encode"""
+    
+    if USE_HYBRID_ENCODING:
+        # ✅ Önce hızlı encode dene
+        command_fast = [
+            FFMPEG_PATH,
+            "-y",
+            "-ss", str(start),
+            "-i", video_path,
+            "-t", str(duration),
+            "-c", "copy",  # Çok hızlı
+            output_file
+        ]
+        
+        result = subprocess.run(
+            command_fast,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            timeout=30
+        )
+        
+        # Başarılı ve dosya geçerliyse bitir
+        if result.returncode == 0 and os.path.exists(output_file) and os.path.getsize(output_file) > 1000:
+            return True
+    
+    # ✅ Hızlı başarısız olduysa veya kullanılmıyorsa güvenli encode
+    command_safe = [
+        FFMPEG_PATH,
+        "-y",
+        "-ss", str(start),
+        "-i", video_path,
+        "-t", str(duration),
+        "-c:v", "libx264",
+        "-preset", "ultrafast",
+        "-crf", "23",
+        "-c:a", "aac",
+        "-b:a", "128k",
+        output_file
+    ]
+    
+    try:
+        subprocess.run(
+            command_safe,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            check=True,
+            timeout=60
+        )
+        return True
+    except:
+        return False
+
+# ==========================
+# ✂️ KES + İSİMLENDİR (IMPROVED + FIXED)
+# ==========================
+def split_and_caption(video_path, scenes, video_duration):
+    print("\n🔍 Sahneler filtreleniyor...")
+    
+    # ✅ Geçerli sahneleri filtrele
+    valid_scenes = []
+    for scene in scenes:
+        start = scene[0].get_seconds()
+        end = scene[1].get_seconds()
+        duration = end - start
+        
+        if filter_scene(start, end, duration, video_duration):
+            valid_scenes.append(scene)
+    
+    # ✅ İstatistikler
+    print(f"\n📊 {len(scenes)} sahne → {len(valid_scenes)} geçerli klip")
+    
+    if len(valid_scenes) == 0:
+        print("⚠️  Hiç geçerli klip bulunamadı. THRESHOLD veya MIN_SCENE_LENGTH ayarlarını kontrol edin.")
+        return
+    
+    total_duration = sum(s[1].get_seconds() - s[0].get_seconds() for s in valid_scenes)
+    print(f"⏱️  Toplam klip süresi: {total_duration/60:.1f} dakika")
+    print(f"📏 Ortalama klip: {total_duration/len(valid_scenes):.1f} saniye\n")
+    
+    print("✂️  Klipler kesiliyor ve isimlendiriliyor...")
+    
+    # ✅ FIX: tqdm'i doğru kullan (leave=True ile progress bar kalıcı olur)
+    success_count = 0
+    
+    for i, scene in enumerate(tqdm(valid_scenes, desc="Kesim", unit="klip", ncols=70, leave=True)):
+        try:
+            start = scene[0].get_seconds()
+            end = scene[1].get_seconds()
+            duration = end - start
+
+            position_ratio = start / video_duration
+            caption = choose_caption(position_ratio)
+
+            safe_caption = caption.replace(" ", "_").replace("'", "")
+            output_file = os.path.join(CLIP_DIR, f"{safe_caption}_{i+1:03d}.mp4")
+            
+            # ✅ Hibrit encode
+            encode_success = encode_clip(video_path, start, duration, output_file)
+            
+            if not encode_success:
+                continue
+            
+            # ✅ Thumbnail oluştur (klipin ortasından)
+            if GENERATE_THUMBNAILS and os.path.exists(output_file):
+                thumb_file = os.path.join(THUMBNAIL_DIR, f"{safe_caption}_{i+1:03d}.jpg")
+                extract_thumbnail(output_file, thumb_file, duration)
+            
+            # ✅ Text overlay ekle (isteğe bağlı)
+            if ADD_TEXT_OVERLAY and os.path.exists(output_file):
+                temp_file = output_file.replace(".mp4", "_temp.mp4")
+                add_text_overlay(output_file, temp_file, caption)
+            
+            success_count += 1
+            
+        except Exception as e:
+            # Hata olsa bile devam et
+            continue
+    
+    print(f"\n✅ {success_count}/{len(valid_scenes)} klip başarıyla oluşturuldu.")
+
+# ==========================
+# 🚀 MAIN
+# ==========================
+def main():
+    print("=" * 60)
+    print("🎬 YOUTUBE VIDEO CLİPPER v2.1")
+    print("=" * 60)
+    
+    # ✅ Eski klipleri temizle
+    cleanup_old_clips()
+    
+    url = input("\n📎 YouTube URL girin: ").strip()
+
+    try:
+        video_path = download_video(url)
+        scenes, video_duration = detect_scenes(video_path)
+        split_and_caption(video_path, scenes, video_duration)
+
+        print("\n" + "=" * 60)
+        print("🎉 TAMAMLANDI!")
+        print("=" * 60)
+        print(f"📁 Klipler: {CLIP_DIR}/")
+        if GENERATE_THUMBNAILS:
+            print(f"🖼️  Thumbnail'ler: {THUMBNAIL_DIR}/")
+        print("\n💡 İpucu: Ayarları değiştirmek için kod başındaki config'e bakın")
+
+    except Exception as e:
+        print(f"\n❌ Hata oluştu: {e}")
+        import traceback
+        traceback.print_exc()
+
+    input("\n✅ Çıkmak için Enter'a bas...")
+
+if __name__ == "__main__":
+    main()

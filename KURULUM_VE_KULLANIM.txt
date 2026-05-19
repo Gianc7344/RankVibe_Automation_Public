@@ -1,0 +1,41 @@
+==============================================
+🎬 RANKVIBE AUTOMATION - KURULUM VE KULLANIM
+==============================================
+
+Bu proje, YouTube'dan belirlediğiniz konseptte videoları bulup, yapay zeka ile fikir üretip, klipleri sahne bazlı keserek "Rank (Sıralama)" konseptli kısa videolar (Shorts/TikTok/Reels) oluşturan otonom bir araçtır.
+
+--- ⚙️ BÖLÜM 1: GEREKSİNİMLER VE KURULUM ---
+
+Bu projenin çalışması için bilgisayarınızda kurulu olması gerekenler:
+
+1. PYTHON YÜKLEYİN
+- Bilgisayarınızda Python (tercihen 3.10 veya daha yenisi) kurulu olmalıdır.
+- Yüklerken alttaki "Add Python to PATH" kutucuğunu İŞARETLEMEYİ UNUTMAYIN!
+
+2. FFMPEG YÜKLEYİN (ÇOK ÖNEMLİ)
+- Program, videoları kesmek ve renderlamak için FFmpeg motorunu kullanır.
+- Eğer bilgisayarınızda FFmpeg yoksa videolarda işlem yapılamaz.
+- İnternetten FFmpeg indirin, C:\ dizinine (örn: C:\ffmpeg) çıkartın.
+- "C:\ffmpeg\bin" yolunu bilgisayarınızın Sistem Ortam Değişkenlerine (PATH) ekleyin.
+
+3. GEREKLİ KÜTÜPHANELERİ YÜKLEYİN
+- Proje klasörüne sağ tıklayıp komut penceresini (CMD veya PowerShell) açın.
+- Aşağıdaki komutu yazıp Enter'a basın:
+  pip install -r requirements.txt
+
+4. API ANAHTARINIZI GİRİN
+- Program yapay zeka fikir üretimini OpenRouter üzerinden yapar.
+- openrouter.ai adresinden ücretsiz bir hesap açın ve bir API Key alın.
+- 'app.py' dosyasını not defteri ile açın ve şu satırı bulun:
+  API_KEY = "BURAYA_OPENROUTER_API_KEY_GIRILMELI"
+- Kendi anahtarınızı o tırnak işaretlerinin arasına yapıştırıp kaydedin.
+
+--- 🚀 BÖLÜM 2: KULLANIM ---
+
+1. Programı 'run.bat' dosyasına (veya launcher.pyw) çift tıklayarak başlatabilirsiniz. Tarayıcı penceresinde sadeleştirilmiş bir uygulama olarak açılacaktır.
+2. "1. Fikir & Arama" sekmesinde kanalınızın kurallarını (Oyun olmasın vb.) ve son videonuzun analizini girerek "Fikir Üret" deyin. 
+3. Size verdiği terimle YouTube'da arama yapıp en hoşunuza giden, kaliteli derleme videosunu seçin.
+4. "2. Sahne Kesim" sekmesine gelin. Saniyeler içinde o videonun en aksiyonlu sahneleri otomatik ayrıştırılacaktır.
+5. "3. Klip Seçimi" kısmında kullanmak istediğiniz 5 klibi sondan başa sıralamaya göre (önce 5. sonra 4. ... en son 1. olacak şekilde) üzerine tıklayarak seçin.
+6. Son olarak "4. Video Oluştur" diyerek derlemenizi renderlayın. 
+   Final video 'final_videolar' klasöründe sizi bekliyor olacak!

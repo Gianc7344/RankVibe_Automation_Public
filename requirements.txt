@@ -1,0 +1,11 @@
+Flask
+yt-dlp
+scenedetect
+tqdm
+opencv-python-headless
+httpx
+moviepy==1.0.3
+edge-tts
+psutil
+requests
+Pillow
